@@ -1,0 +1,15 @@
+html 
+  header 
+    body
+      table
+        tr
+          th="Titulo"
+          th="Tomo"
+          th="Precio"
+        each producto in productos
+            tr
+                td= producto.titulo
+                td= producto.tomo
+                td= producto.precio
+      a(href="/") 
+        button="Volver al formulario"

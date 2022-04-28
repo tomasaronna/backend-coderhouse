@@ -1,0 +1,27 @@
+{{#if productos}}
+<table>
+    <tr>
+        <th>Título</th>
+        <th>Tomo</th>
+        <th>Precio</th>
+    </tr>
+    {{#each productos}}
+    <tr>
+        <td>
+            {{this.titulo}}
+        </td>
+        <td>
+            {{this.tomo}}
+        </td>
+        <td>
+            {{this.precio}}
+        </td>
+    </tr>
+    {{/each}}
+</table>
+{{else}}
+<h2 style="color: black"> No se encontraron datos </h2>
+{{/if}}
+<div>
+    <a href="/"><button>Volver al formulario</button></a>
+</div>

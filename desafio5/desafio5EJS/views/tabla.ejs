@@ -1,0 +1,21 @@
+<% if (productos.length !== 0) { %>
+    <table>
+      <tr>
+        <th>Título</th>
+        <th>Tomo</th>
+        <th>Precio</th>
+      </tr>
+      <% for (const producto in productos) { %>
+        <tr>
+          <td><%- productos[producto].titulo %> </td>
+          <td><%- productos[producto].tomo %> </td>
+          <td><%- productos[producto].precio %> </td>
+        </tr>
+      <% } %>
+    </table>
+  <% } else { %>
+     <h2 style="color: black"> No se encontraron datos </h2>
+  <% } %>
+  <div>
+    <a href="/"><button>Volver al formulario</button></a>
+  </div>

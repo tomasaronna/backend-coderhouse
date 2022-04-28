@@ -1,0 +1,16 @@
+html 
+  head
+    body     
+      form(action="/productos" method="post")
+        label= "Título: "
+        input(type="text" name="titulo" id="titulo")
+        label= "Tomo: "
+        input(type="number" name="tomo" id="tomo")
+        label= "Precio: " 
+        input(type="number" name="precio" id="precio")
+        button(type="submit")="Enviar" 
+      form
+      div
+        a(href="/productos/tabla") 
+          button="Ver tabla"
+      
