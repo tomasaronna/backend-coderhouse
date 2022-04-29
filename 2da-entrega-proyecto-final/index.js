@@ -40,6 +40,10 @@ class Contenedor {
         }
     }
 
+    async get(){
+        console.log(await modelProductos.find({}));
+    }
+
     async agregar(){
         try{
             await modelProductos.insertOne({nombre: "Rust", precio: 4027.64, categoria: "supervivencia"})
@@ -74,6 +78,7 @@ class Contenedor {
 const contenedorProductos = new Contenedor();
 contenedorProductos.conectar();
 contenedorProductos.crear();
-// contenedorProductos.agregar();
-// contenedorProductos.modificar();
-// contenedorProductos.borrar();
+contenedorProductos.get();
+contenedorProductos.agregar();
+contenedorProductos.modificar();
+contenedorProductos.borrar();
