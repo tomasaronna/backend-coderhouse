@@ -33,12 +33,69 @@ class ContenedorCarrito{
       console.log(e)
     }
   }
-  async actualizar() {
-    const doc = query.doc(`${id}`)
-    const item = await doc.update
+
+  async get(){
+    try{
+      const querySnapshot = await query.get();
+      const res = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        nombre: doc.data().nombre,
+        precio: doc.data().precio
+      }))
+      console.log(res)
+    }catch(e){
+      console.log(e)
+    }
+  }
+
+  async getByID(){
+    try{
+      const id = 9;
+      const doc = query.doc(`${id}`)
+      const producto = await doc.get();
+      const res = producto.data();
+      console.log(res);
+    }catch(e){
+      console.log(e)
+    }
+  }
+
+  async PUT() {
+    try{
+      const id = 3;
+      const doc = query.doc(`${id}`);
+      const item = await doc.update({precio: 2000})
+      console.log("Precio actualizado");
+    }catch(e){
+      console.log(e)
+    }
+  }
+
+  async delete(){
+    try{
+      const id = 8;
+      const doc = query.doc(`${id}`);
+      const producto = doc.delete();
+      console.log('Producto eliminado');
+      console.log(producto)
+    }catch(e){
+      console.log(e)
+    }finally{
+      const querySnapshot = await query.get();
+      const res = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        nombre: doc.data().nombre,
+        precio: doc.data().precio
+      }))
+      console.log(res)
+    }
   }
 }
 
 const contenedor = new ContenedorCarrito();
 
 contenedor.agregar();
+contenedor.get()
+contenedor.getByID();
+contenedor.PUT();
+contenedor.delete();
