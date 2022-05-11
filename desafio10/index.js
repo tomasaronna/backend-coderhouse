@@ -25,7 +25,7 @@ app.use(
   session({
     store: MongoStore.create({
       mongoUrl:
-        "mongodb+srv://tomasaronna:asd456@cluster0.j6seg.mongodb.net/sesiones?retryWrites=true&w=majority",
+        "mongodb+srv://********:*******@cluster0.j6seg.mongodb.net/sesiones?retryWrites=true&w=majority",
       ttl: 60,
       mongoOptions: advancedOptions,
     }),
