@@ -5,11 +5,14 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
+// const MongoStore = require("connect-mongo");
+// const advancedOptions = { useNewUrlParser: true, useUnifiedTopology: true };
 
 // ENV
 require("dotenv").config();
 const PUERTO = process.env.PUERTO || 3000;
 // const MONGOURI = process.env.MONGOURI;
+// const SECRET = process.env.SECRET;
 
 // app
 const app = express();
@@ -40,28 +43,18 @@ app.use(cookieParser());
 //       ttl: 60,
 //       mongoOptions: advancedOptions,
 //     }),
-//     secret: "lavacalolatienecabezaytienecola",
+//     secret: SECRET,
 //     resave: true,
 //     saveUninitialized: false,
 //   })
 // );
-app.use(
-  session({
-    secret: "secreto",
-    resave: true,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 20000,
-    },
-  })
-);
 
 //memoria
 
 const usuarios = [
-  { mail: "pepe@gmail.com", password: "asd" },
-  { mail: "ana@gmail.com", password: "asd1" },
-  { mail: "juan@gmail.com", password: "asd2" },
+  { user: "pepe@gmail.com", password: "asd" },
+  { user: "ana@gmail.com", password: "asd1" },
+  { user: "juan@gmail.com", password: "asd2" },
 ];
 
 // passport
@@ -71,38 +64,34 @@ passport.use(
   "registrar",
   new LocalStrategy(
     { passReqToCallback: true },
-    (req, email, password, done) => {
+    (req, username, password, done) => {
       const usuarioExistente = usuarios.find(
-        (usuario) => usuario.mail === email
+        (usuario) => usuario.user === username
       );
       if (usuarioExistente) {
         console.log("Usuario existente");
         return done(null, false);
       } else {
-        usuarios.push({ mail: email, password: password });
+        usuarios.push({ user: username, password: password });
         console.log(usuarios);
-        done(null, { mail: email });
+        done(null, { user: username });
       }
     }
   )
 );
 passport.use(
   "login",
-  new LocalStrategy(
-    { passReqToCallback: true },
-    (req, email, password, done) => {
-      console.log("Usuario logueado");
-      const userExistente = usuarios.find((usuario) => {
-        return usuario.mail === email && usuario.password === password;
-      });
-      console.log(userExistente);
-      if (userExistente) {
-        done(null, false);
-      } else {
-        done(null, userExistente);
-      }
+  new LocalStrategy((username, password, done) => {
+    const userExistente = usuarios.find((usuario) => {
+      return usuario.user == username && usuario.password == password;
+    });
+    console.log(userExistente);
+    if (!userExistente) {
+      return done(null, false);
+    } else {
+      return done(null, userExistente);
     }
-  )
+  })
 );
 
 // inicio del servidor
@@ -129,28 +118,42 @@ app.get("/register-error", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  req.logOut();
-  res.render("login");
+  return req.logout(req.user, (err) => {
+    if (err) return next(err);
+    res.render("login");
+  });
 });
 
-app.post("/login", (req, res) => {
+app.post(
+  "/login",
   passport.authenticate("login", {
     successRedirect: "products",
     failureRedirect: "login-error",
+  })
+);
+
+app.get("/login-error", (req, res) => {
+  res.render("login-error");
+});
+
+app.get("/logout", (req, res) => {
+  req.logout(req.user, (err) => {
+    if (err) return next(err);
+    res.redirect("/login");
   });
 });
 
 app.get("/products", (req, res) => {
-  const { email } = req.user.email;
-  console.log(req.user.email);
+  const name = req.user.user;
+  res.render("products", { name: name });
 });
 
 // Serialización
 passport.serializeUser((usuario, done) => {
-  done(null, usuario.mail);
+  done(null, usuario.user);
 });
 
-passport.deserializeUser((mail, done) => {
-  const usuarioDZ = usuarios.find((usuario) => (usuario.mail = mail));
+passport.deserializeUser((user, done) => {
+  const usuarioDZ = usuarios.find((usuario) => (usuario.user = user));
   done(null, usuarioDZ);
 });
