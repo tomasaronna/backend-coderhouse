@@ -22,3 +22,5 @@ log4js.configure({
     },
   },
 });
+
+module.exports = (loggerConsola, loggerWarn, loggerError);
