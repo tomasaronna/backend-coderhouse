@@ -1,3 +1,10 @@
+// ENV
+require("dotenv").config();
+const PORT = process.env.PORT || 3000;
+const MONGOSESSION = process.env.MONGOSESSION;
+const MONGOUSUARIOS = process.env.MONGOUSUARIOS;
+const SECRET = process.env.SECRET;
+
 //requires
 const express = require("express");
 const hbs = require("express-handlebars");
@@ -5,14 +12,10 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
-// const MongoStore = require("connect-mongo");
-// const advancedOptions = { useNewUrlParser: true, useUnifiedTopology: true };
-
-// ENV
-require("dotenv").config();
-const PUERTO = process.env.PUERTO || 3000;
-// const MONGOURI = process.env.MONGOURI;
-// const SECRET = process.env.SECRET;
+const MongoStore = require("connect-mongo");
+const modelUsuarios = require("./models/modelUsuarios");
+const { default: mongoose } = require("mongoose");
+const advancedOptions = { useNewUrlParser: true, useUnifiedTopology: true };
 
 // app
 const app = express();
@@ -36,54 +39,62 @@ app.set("view engine", ".hbs");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
-// app.use(
-//   session({
-//     store: MongoStore.create({
-//       mongoUrl: MONGOURI,
-//       ttl: 60,
-//       mongoOptions: advancedOptions,
-//     }),
-//     secret: SECRET,
-//     resave: true,
-//     saveUninitialized: false,
-//   })
-// );
+app.use(
+  session({
+    store: MongoStore.create({
+      mongoUrl: MONGOSESSION,
+      ttl: 6000,
+      mongoOptions: advancedOptions,
+    }),
+    secret: SECRET,
+    resave: true,
+    saveUninitialized: false,
+  })
+);
 
-//memoria
+//Conexión MONGO
 
-const usuarios = [
-  { user: "pepe@gmail.com", password: "asd" },
-  { user: "ana@gmail.com", password: "asd1" },
-  { user: "juan@gmail.com", password: "asd2" },
-];
+(async () => {
+  try {
+    await mongoose.connect(MONGOUSUARIOS);
+    console.log("BASE DE DATOS CONECTADA");
+  } catch (err) {
+    console.log(`No se pudo conectar a la base de datos ${err}`);
+  }
+})();
 
 // passport
 app.use(passport.initialize());
 app.use(passport.session());
+
 passport.use(
   "registrar",
   new LocalStrategy(
     { passReqToCallback: true },
-    (req, username, password, done) => {
-      const usuarioExistente = usuarios.find(
-        (usuario) => usuario.user === username
+    async (req, username, password, done) => {
+      const usuarioExistente = await modelUsuarios.find(
+        {
+          user: username,
+        },
+        { __v: 0 }
       );
-      if (usuarioExistente) {
+      console.log(`USUARIO EXISTENTE: ${usuarioExistente}`);
+      if (usuarioExistente.length != 0) {
         console.log("Usuario existente");
         return done(null, false);
       } else {
-        usuarios.push({ user: username, password: password });
-        console.log(usuarios);
+        await modelUsuarios.create({ user: username, password: password });
         done(null, { user: username });
       }
     }
   )
 );
+
 passport.use(
   "login",
-  new LocalStrategy((username, password, done) => {
-    const userExistente = usuarios.find((usuario) => {
-      return usuario.user == username && usuario.password == password;
+  new LocalStrategy(async (username, password, done) => {
+    const userExistente = await modelUsuarios.find({
+      user: username,
     });
     console.log(userExistente);
     if (!userExistente) {
@@ -95,8 +106,8 @@ passport.use(
 );
 
 // inicio del servidor
-app.listen(PUERTO, () => {
-  console.log(`Servidor levantado en el puerto: ${PUERTO}`);
+app.listen(PORT, () => {
+  console.log(`Servidor levantado en el puerto: ${PORT}`);
 });
 
 // rutas
@@ -149,11 +160,11 @@ app.get("/products", (req, res) => {
 });
 
 // Serialización
-passport.serializeUser((usuario, done) => {
-  done(null, usuario.user);
+passport.serializeUser((user, done) => {
+  done(null, user);
 });
 
-passport.deserializeUser((user, done) => {
-  const usuarioDZ = usuarios.find((usuario) => (usuario.user = user));
+passport.deserializeUser(async (username, done) => {
+  const usuarioDZ = await modelUsuarios.find({ user: username });
   done(null, usuarioDZ);
 });
