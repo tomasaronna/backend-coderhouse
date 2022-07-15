@@ -31,7 +31,7 @@ router.get("/login", (req, res) => {
 router.post(
   "/login",
   passport.authenticate("login", {
-    successRedirect: "products",
+    successRedirect: "profile",
     failureRedirect: "login-error",
   })
 );
@@ -47,10 +47,10 @@ router.get("/logout", (req, res) => {
   });
 });
 
-router.get("/products", (req, res) => {
+router.get("/profile", (req, res) => {
   console.log(req);
   const name = req.user.user;
-  res.render("products", { name: name });
+  res.render("profile", { name: name });
 });
 
 module.exports = router;
